@@ -1,0 +1,58 @@
+# RAGoncall — TODO
+
+> Generated: 2026-06-25
+> Repo: https://github.com/deghosal-2026/oncall-rag
+
+## M1 — CLI RAG (16 tickets)
+
+### Done
+
+| # | Title | Issue | Status |
+|---|---|---|---|
+| M1.1 | Project scaffolding | [#1](https://github.com/deghosal-2026/oncall-rag/issues/1) | ✅ |
+| M1.2 | LLM client interface | [#2](https://github.com/deghosal-2026/oncall-rag/issues/2) | ✅ |
+
+### Next Up
+
+| # | Title | Issue | Status |
+|---|---|---|---|
+| M1.3 | Chunking engine | [#3](https://github.com/deghosal-2026/oncall-rag/issues/3) | ⏳ Implemented, needs tests |
+| M1.4 | Embedding + indexing | [#4](https://github.com/deghosal-2026/oncall-rag/issues/4) | ⏳ Implemented, needs tests |
+| M1.5 | Retrieval | [#5](https://github.com/deghosal-2026/oncall-rag/issues/5) | ⏳ Implemented, needs tests |
+| M1.6 | Responder | [#6](https://github.com/deghosal-2026/oncall-rag/issues/6) | ⏳ Implemented, needs tests |
+| M1.7 | CLI: index command | [#7](https://github.com/deghosal-2026/oncall-rag/issues/7) | ⏳ Implemented, needs tests |
+| M1.8 | CLI: query command | [#8](https://github.com/deghosal-2026/oncall-rag/issues/8) | ⏳ Implemented, needs tests |
+| M1.9 | Eval harness | [#9](https://github.com/deghosal-2026/oncall-rag/issues/9) | ⏳ Implemented, needs tests |
+| M1.10 | Eval set generation | [#10](https://github.com/deghosal-2026/oncall-rag/issues/10) | ❌ Not started |
+| M1.11 | Unit + integration tests | [#11](https://github.com/deghosal-2026/oncall-rag/issues/11) | ❌ Not started |
+| M1.12 | Chunking experiment | [#12](https://github.com/deghosal-2026/oncall-rag/issues/12) | ❌ Not started |
+| M1.13 | Setup instructions (README) | [#23](https://github.com/deghosal-2026/oncall-rag/issues/23) | ❌ Not started |
+| M1.14 | User guide | [#24](https://github.com/deghosal-2026/oncall-rag/issues/24) | ❌ Not started |
+| M1.15 | Architecture guide | [#25](https://github.com/deghosal-2026/oncall-rag/issues/25) | ❌ Not started |
+| M1.16 | E2E test plan + tests | [#26](https://github.com/deghosal-2026/oncall-rag/issues/26) | ❌ Not started |
+
+## M2 — Discord Bot + Dashboard (11 tickets)
+
+All not started.
+
+| # | Title | Issue |
+|---|---|---|
+| M2.1 | Discord bot scaffold | [#13](https://github.com/deghosal-2026/oncall-rag/issues/13) |
+| M2.2 | Slash command: /query | [#14](https://github.com/deghosal-2026/oncall-rag/issues/14) |
+| M2.3 | Feedback collection | [#15](https://github.com/deghosal-2026/oncall-rag/issues/15) |
+| M2.4 | Rich response formatting | [#16](https://github.com/deghosal-2026/oncall-rag/issues/16) |
+| M2.5 | Dashboard scaffold | [#17](https://github.com/deghosal-2026/oncall-rag/issues/17) |
+| M2.6 | Dashboard: query metrics | [#18](https://github.com/deghosal-2026/oncall-rag/issues/18) |
+| M2.7 | Dashboard: knowledge gaps | [#19](https://github.com/deghosal-2026/oncall-rag/issues/19) |
+| M2.8 | Dashboard: feedback analysis | [#20](https://github.com/deghosal-2026/oncall-rag/issues/20) |
+| M2.9 | E2E tests (M2) | [#21](https://github.com/deghosal-2026/oncall-rag/issues/21) |
+| M2.10 | README + docs update | [#22](https://github.com/deghosal-2026/oncall-rag/issues/22) |
+
+## Quick Start
+
+```bash
+pip install -e .
+oncall-rag index ./corpus
+oncall-rag query "How do I check a CrashLoopBackOff pod?"
+oncall-rag eval
+```

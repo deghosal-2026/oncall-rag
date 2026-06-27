@@ -26,7 +26,7 @@
 | # | Title | Issue | Status |
 |---|---|---|---|
 | M1.12 | Chunking experiment | [#12](https://github.com/deghosal-2026/oncall-rag/issues/12) | ✅ — header-split wins (0.9524 MRR) |
-| M1.13 | Setup instructions (README) | [#23](https://github.com/deghosal-2026/oncall-rag/issues/23) | ❌ Not started |
+| M1.13 | Setup instructions (README) | [#23](https://github.com/deghosal-2026/oncall-rag/issues/23) | ✅ |
 | M1.14 | User guide | [#24](https://github.com/deghosal-2026/oncall-rag/issues/24) | ❌ Not started |
 | M1.15 | Architecture guide | [#25](https://github.com/deghosal-2026/oncall-rag/issues/25) | ❌ Not started |
 | M1.16 | E2E test plan + tests | [#26](https://github.com/deghosal-2026/oncall-rag/issues/26) | ❌ Not started |

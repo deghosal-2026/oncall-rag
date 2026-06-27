@@ -174,6 +174,7 @@ oncall-rag eval                             # Run eval set, print MRR/recall@k
 oncall-rag chunking-experiment <path>      # Compare 3 chunking strategies
 oncall-rag discord                          # Start the Discord bot
 oncall-rag dashboard                         # Launch the Streamlit dashboard
+oncall-rag process-alerts                     # Process alerts/alerts/inbox/ through RAG pipeline
 ```
 
 - `index` walks `<path>` recursively, chunks each `.md` file, embeds via `all-MiniLM-L6-v2`, stores in ChromaDB
@@ -350,12 +351,20 @@ oncall-rag/
 │   ├── e2e-test-plan.md
 │   ├── setup.md
 │   └── user-guide.md
+├── alerts/
+│   ├── inbox/              # Drop alert .json files here
+│   ├── outbox/             # Processed results land here
+│   └── archive/            # Originals moved here after processing
 ├── scripts/
-│   └── generate_eval.py
+│   ├── generate_eval.py
+│   ├── generate_test_alerts.py
+│   └── test_alert_pipeline.sh
 ├── src/
 │   └── oncall_rag/
 │       ├── __init__.py
-│       ├── __main__.py          # CLI entry: index, query, eval, chunking-experiment, discord
+│       ├── __main__.py          # CLI entry: index, query, eval, chunking-experiment, discord, dashboard, process-alerts
+│       ├── alert_processor.py   # FIFO alert pipeline (process inbox → RAG → outbox)
+│       ├── alert_schema.py      # Alert and AlertResult dataclasses
 │       ├── bot.py               # Discord bot (slash commands, feedback, query logging)
 │       ├── config.py            # .env loader + pydantic model
 │       ├── dashboard/
@@ -511,13 +520,15 @@ Labels: `milestone`, `ticket`
 | M2.9 | E2E tests (M2) | Discord commands (mocked), dashboard pages | Test coverage for all new features |
 | M2.10 | README + docs update | Setup guide for Discord bot, dashboard, full M2 workflow | README covers end-to-end from install to querying via Discord |
 
-### M3 — PagerDuty Integration (Future)
+### M3 — FIFO Alert Pipeline (5 tickets)
 
 | # | Title | Description | Acceptance Criteria |
 |---|---|---|---|
-| M3.1 | PagerDuty webhook receiver | Receive alert payload, extract alert context | PagerDuty webhook verified |
-| M3.2 | Auto-query on alert | Trigger RAG query with alert context, return suggested runbook | Auto-response posted to alert channel |
-| M3.3 | Alert-response logging | Log PagerDuty alerts + RAG responses for audit | Correlatable alert → response trail |
+| M3.1 | Alert schema + FIFO dirs | Define `Alert`/`AlertResult` dataclasses, create `alerts/inbox/`, `alerts/outbox/`, `alerts/archive/` | Schema validated, dirs gitignored |
+| M3.2 | `process-alerts` CLI | Read inbox .json files, call RAG pipeline, write results to outbox, archive originals | Process handles empty inbox, invalid JSON, file lifecycle |
+| M3.3 | Test alert generator | `scripts/generate_test_alerts.py` — creates sample alerts with realistic fields | 8 templates covering kubernetes, grafana, sre, unknown |
+| M3.4 | E2E test | `scripts/test_alert_pipeline.sh` — generate → process → verify → clean | Automated pass/fail on the full pipeline |
+| M3.5 | Docs update | TODO, SPEC, e2e-test-plan with M3 entries | Consistent with existing doc style |
 
 ## Glossary
 

@@ -16,3 +16,8 @@ docs/chunking-experiment-results.md
 # Discord bot feedback + query logs
 data/feedback.jsonl
 data/queries.jsonl
+
+# FIFO alert pipeline (generated at runtime)
+alerts/inbox/
+alerts/outbox/
+alerts/archive/

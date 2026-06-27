@@ -5,6 +5,7 @@
 >
 > **M1 — CLI RAG: ✅ COMPLETE (16/16)**
 > **M2 — Discord Bot + Dashboard: ✅ COMPLETE (12/12)**
+> **M3 — FIFO Alert Pipeline: ▶️ In progress (3/5)**
 
 ## M1 — CLI RAG (16 tickets)
 
@@ -56,6 +57,16 @@
 | M2.9 | E2E tests (M2) | [#21](https://github.com/deghosal-2026/oncall-rag/issues/21) | ✅ — 68 tests total (54 + 12 new + 2 e2e) |
 | M2.10 | README + docs update | [#22](https://github.com/deghosal-2026/oncall-rag/issues/22) | ✅ |
 
+## M3 — FIFO Alert Pipeline (5 tickets)
+
+| # | Title | Issue | Status |
+|---|---|---|---|
+| M3.1 | Alert schema + FIFO directory setup | [#28](https://github.com/deghosal-2026/oncall-rag/issues/28) | ✅ — schena, dirs, dataclasses |
+| M3.2 | process-alerts CLI command | [#29](https://github.com/deghosal-2026/oncall-rag/issues/29) | ✅ — processor, CLI wiring, unit tests |
+| M3.3 | Test alert generator script | [#30](https://github.com/deghosal-2026/oncall-rag/issues/30) | ✅ — scripts/generate_test_alerts.py |
+| M3.4 | E2E test: generate → process → verify | [#31](https://github.com/deghosal-2026/oncall-rag/issues/31) | 🔲 — test script + plan needed |
+| M3.5 | Docs: update TODO, SPEC, e2e-test-plan | [#32](https://github.com/deghosal-2026/oncall-rag/issues/32) | 🔲 |
+
 ## Quick Start
 
 ```bash
@@ -65,4 +76,7 @@ oncall-rag query "How do I check a CrashLoopBackOff pod?"
 oncall-rag eval
 oncall-rag discord     # Start the Discord bot
 oncall-rag dashboard   # Launch the Streamlit dashboard
+# M3 — Alert pipeline
+python scripts/generate_test_alerts.py   # Drop test alerts in inbox/
+oncall-rag process-alerts                # Process them through RAG
 ```

@@ -46,6 +46,26 @@ End-to-end tests exercise the full CLI from a user's perspective: they run `onca
 | U3 | `bot._log_feedback` | Writes JSONL, appends multiple entries |
 | U4 | `bot._log_query` | Writes JSONL, tracks has_sources flag |
 
+### M3 — FIFO Alert Pipeline
+
+| # | Scenario | Steps | Expected |
+|---|---|---|---|
+| 19 | Generate test alerts | `scripts/generate_test_alerts.py` | 8 .json files created in `alerts/inbox/` |
+| 20 | Process alerts | `oncall-rag process-alerts` | Files move inbox → outbox + archive |
+| 21 | Verify outbox schema | Each outbox file checked | Has: alert_id, title, processed_at, answer, sources, has_runbook |
+| 22 | Empty inbox | Run process-alerts with no files | Reports 0 processed |
+| 23 | Invalid JSON in inbox | Place a bad .json file in inbox | Error logged, file skipped |
+| 24 | Help shows process-alerts | `oncall-rag --help` | Output includes `process-alerts` |
+
+### Unit Tests (M3)
+
+| # | Module | Tests |
+|---|---|---|
+| U5 | `alert_schema.Alert` | Defaults, from-dict construction |
+| U6 | `alert_schema.AlertResult` | Defaults, field types |
+| U7 | `alert_processor._build_question` | Title+message, title-only |
+| U8 | `alert_processor.process_alerts` | Empty inbox, happy path with mock, invalid JSON |
+
 ### Error Handling
 
 | # | Scenario | Steps | Expected |
@@ -55,7 +75,7 @@ End-to-end tests exercise the full CLI from a user's perspective: they run `onca
 
 ## Test Structure
 
-Tests live in `tests/e2e/test_cli.py`. Each test creates a temporary corpus, runs the CLI via `subprocess`, and asserts on stdout/stderr/returncode.
+Tests live in `tests/e2e/test_cli.py`. Each test creates a temporary corpus, runs the CLI via `subprocess`, and asserts on stdout/stderr/returncode. M3 alerts use mock/in-memory directories via monkeypatch in unit tests, and the `scripts/test_alert_pipeline.sh` script validates the real pipeline end-to-end.
 
 ## CI Integration
 

@@ -40,6 +40,7 @@ def main() -> None:
 
     sub.add_parser("discord", help="Start the Discord bot")
     sub.add_parser("dashboard", help="Start the Streamlit dashboard")
+    sub.add_parser("process-alerts", help="Process alerts from alerts/inbox/ through RAG pipeline")
 
     index_parser = sub.add_parser("index", help="Ingest markdown files into ChromaDB")
     index_parser.add_argument("path", help="Directory of markdown files")
@@ -89,6 +90,15 @@ def main() -> None:
         from oncall_rag.bot import OncallBot
         bot = OncallBot(config)
         bot.run(config.discord_bot_token, log_handler=None)
+
+    elif args.command == "process-alerts":
+        from oncall_rag.alert_processor import process_alerts
+        result = process_alerts(config)
+        print(f"Processed {result['processed']} alerts ({result['errors']} errors)")
+        if result["processed"]:
+            outbox = Path("alerts/outbox")
+            files = list(outbox.glob("*.json"))
+            print(f"Results written to alerts/outbox/ ({len(files)} file(s))")
 
     elif args.command == "dashboard":
         import sys

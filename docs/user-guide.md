@@ -4,7 +4,65 @@
 
 oncall-rag indexes your runbook markdown files and lets you ask questions in natural language. It retrieves the most relevant sections and generates a grounded answer with source citations — so you can verify and act quickly during an incident.
 
-## Workflow
+### Setup Layout
+
+```
+project root/
+├── corpus/                     # your runbook .md files
+├── data/
+│   ├── chroma_db/              # vector store (created by index)
+│   ├── eval.json               # Q&A pairs for eval
+│   └── feedback.jsonl          # user feedback (thumbs up/down)
+├── alerts/
+│   ├── inbox/                  # incoming alert JSON files
+│   ├── outbox/                 # processed alert results
+│   └── archive/                # processed originals
+├── .env                        # config: LLM provider, keys, chunking
+├── src/oncall_rag/             # source
+└── AGENTS.md                   # opencode context
+```
+
+### Query Flow
+
+When you run `oncall-rag query "How do I debug a CrashLoopBackOff pod?"`:
+
+```
+  ┌─────────────────┐
+  │   oncall-rag     │
+  │   query "..."    │
+  └────────┬────────┘
+           │
+           ▼
+  ┌─────────────────┐
+  │  1. Embed query │  all-MiniLM-L6-v2 → 384-dim vector
+  └────────┬────────┘
+           │
+           ▼
+  ┌─────────────────┐
+  │  2. ChromaDB    │  cosine-similarity search on stored chunks
+  │  vector search  │  returns TOP_K (default: 5) best-matching chunks
+  └────────┬────────┘
+           │
+           ▼
+  ┌─────────────────┐
+  │  3. Build       │  retrieved chunks stitched into a prompt
+  │  LLM prompt     │  with system instruction + source citations
+  └────────┬────────┘
+           │
+           ▼
+  ┌──────────────────────────────┐
+  │  4. LLM generates answer     │  OMLX / OpenAI / Anthropic
+  │  (grounded on context only)  │  ~30s first request (cold model load)
+  └────────┬─────────────────────┘
+           │
+           ▼
+  ┌──────────────────────┐
+  │  5. Print response   │  answer text + source file:line refs
+  │  to terminal         │  (or Discord embed / Streamlit)
+  └──────────────────────┘
+```
+
+### Workflow
 
 ```
 1. Prepare runbooks  →  2. Index  →  3. Query  →  4. Evaluate (optional)
@@ -139,21 +197,65 @@ This indexes with each strategy, runs eval, and writes a comparison to `docs/chu
 
 ---
 
-## 6. Configuration Reference
+## 6. Discord Bot
+
+```bash
+oncall-rag discord
+```
+
+The bot registers two slash commands:
+- `/ping` — health check, responds with `Pong!`
+- `/query <question>` — runs the RAG pipeline and returns a rich embed answer with source citations
+
+Each `/query` response includes 👍/👎 buttons for feedback collection. Feedback is logged to `data/feedback.jsonl`.
+
+Full setup guide: [docs/setup.md](setup.md)
+
+---
+
+## 7. Alert Pipeline
+
+The FIFO alert pipeline processes JSON alert files through the RAG pipeline:
+
+```bash
+# Drop alert files into alerts/inbox/ (one JSON per alert)
+# Each file needs: title, message, severity, source, timestamp
+
+# Generate 8 sample alerts:
+python scripts/generate_test_alerts.py
+
+# Generate more:
+python scripts/generate_test_alerts.py --count 20
+
+# Process all pending alerts:
+oncall-rag process-alerts
+```
+
+Processing flow:
+1. Reads all `.json` files from `alerts/inbox/`
+2. For each alert, queries the RAG pipeline with the alert title + message
+3. Writes `AlertResult` (RAG answer + sources) to `alerts/outbox/`
+4. Moves the original alert file to `alerts/archive/`
+
+---
+
+## 8. Configuration Reference
 
 All settings are read from `.env` in the project root. A minimal config:
 
 ```
 LLM_PROVIDER=omlx
-OMLX_ENDPOINT=http://localhost:11434
-OMLX_MODEL=qwen2.5-coder:7b
+OMLX_ENDPOINT=http://localhost:8000
+OMLX_MODEL=Llama-3.2-3B-Instruct-4bit
+OMLX_API_KEY=omlx-test
 ```
 
 | Variable | Default | Description |
 |---|---|---|
 | `LLM_PROVIDER` | `omlx` | `omlx`, `openai`, or `anthropic` |
-| `OMLX_ENDPOINT` | `http://localhost:11434` | Ollama server URL |
-| `OMLX_MODEL` | `qwen2.5-coder:7b` | Ollama model name |
+| `OMLX_ENDPOINT` | `http://localhost:8000` | OMLX server URL |
+| `OMLX_MODEL` | `Llama-3.2-3B-Instruct-4bit` | OMLX model name |
+| `OMLX_API_KEY` | `omlx-test` | API key for OMLX |
 | `OPENAI_API_KEY` | — | OpenAI API key |
 | `OPENAI_MODEL` | `gpt-4o-mini` | OpenAI model |
 | `ANTHROPIC_API_KEY` | — | Anthropic API key |
@@ -169,10 +271,13 @@ OMLX_MODEL=qwen2.5-coder:7b
 ## CLI Reference
 
 ```
-oncall-rag index <path> [--rebuild]
-oncall-rag query "<question>"
-oncall-rag eval
-oncall-rag chunking-experiment <path>
+oncall-rag index <path> [--rebuild]    # Index runbooks into ChromaDB
+oncall-rag query "<question>"          # Query the RAG pipeline
+oncall-rag eval                        # Run eval set, print MRR/Recall@5
+oncall-rag chunking-experiment <path>  # Compare chunking strategies
+oncall-rag discord                     # Start the Discord bot
+oncall-rag dashboard                   # Launch Streamlit dashboard
+oncall-rag process-alerts              # Process alert files through RAG
 ```
 
 ---
@@ -182,7 +287,7 @@ oncall-rag chunking-experiment <path>
 | Problem | Likely cause | Fix |
 |---|---|---|
 | `No documents indexed` | No `.md` files found at path | Check the path; files must be `.md` and under 1 MB |
-| LLM returns empty | Model not running | `ollama pull qwen2.5-coder:7b` then `ollama serve` |
+| LLM returns empty | Model not running | Ensure OMLX is running on `localhost:8000` with a model loaded |
 | Low MRR | Wrong chunking strategy | Run `chunking-experiment` to find the best strategy for your docs |
 | `I don't have a runbook for this` | No relevant chunks retrieved | Check your corpus; try `TOP_K=10` or adjust chunk settings |
 | Slow queries | Large index or slow LLM | Reduce `TOP_K` or use a faster model |

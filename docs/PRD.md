@@ -81,9 +81,11 @@ Query runbooks from the terminal. Core RAG pipeline.
 - Store feedback (thumbs up/down)
 - No re-ranking yet — log only, analyze on dashboard
 
-### M3 — PagerDuty Integration (Future)
+### M3 — FIFO Alert Pipeline
 
-- Auto-trigger from PagerDuty alert with alert context
+- File-based alert pipeline: `alerts/inbox/` → RAG → `alerts/outbox/` + `alerts/archive/`
+- CLI command: `oncall-rag process-alerts`
+- Test alert generator: `scripts/generate_test_alerts.py`
 
 ## System Requirements
 

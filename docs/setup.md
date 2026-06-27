@@ -48,7 +48,17 @@ You should see:
 INFO     oncall-rag.bot: Logged in as Oncall RAG#1234 (ID: 123456789)
 ```
 
-## Step 5 — Test End-to-End
+## Step 5 — Verify the CLI (RAG Pipeline)
+
+Before testing Discord, confirm the full RAG pipeline works on the command line:
+
+```bash
+oncall-rag query "How do I debug a CrashLoopBackOff pod?"
+```
+
+Expected output — a natural-language answer with source file citations (not just `"I don't have a runbook for this"`). If the pipeline is down, the CLI will fail too.
+
+## Step 6 — Test Discord End-to-End
 
 1. Open Discord, go to your server
 2. Type `/ping` and send

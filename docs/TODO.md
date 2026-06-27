@@ -5,7 +5,10 @@
 >
 > **M1 — CLI RAG: ✅ COMPLETE (16/16)**
 > **M2 — Discord Bot + Dashboard: ✅ COMPLETE (12/12)**
-> **M3 — FIFO Alert Pipeline: ▶️ In progress (3/5)**
+> **M3 — FIFO Alert Pipeline: ✅ COMPLETE (5/5)**
+> **M4 — Phone Testing: ✅ COMPLETE (5/5)**
+>
+> **🎯 Key Milestone (2026-06-27): Full pipeline verified live with OMLX (`Llama-3.2-3B-Instruct-4bit`) — CLI query returned grounded LLM answer with source citations**
 
 ## M1 — CLI RAG (16 tickets)
 
@@ -64,8 +67,8 @@
 | M3.1 | Alert schema + FIFO directory setup | [#28](https://github.com/deghosal-2026/oncall-rag/issues/28) | ✅ — schena, dirs, dataclasses |
 | M3.2 | process-alerts CLI command | [#29](https://github.com/deghosal-2026/oncall-rag/issues/29) | ✅ — processor, CLI wiring, unit tests |
 | M3.3 | Test alert generator script | [#30](https://github.com/deghosal-2026/oncall-rag/issues/30) | ✅ — scripts/generate_test_alerts.py |
-| M3.4 | E2E test: generate → process → verify | [#31](https://github.com/deghosal-2026/oncall-rag/issues/31) | 🔲 — test script + plan needed |
-| M3.5 | Docs: update TODO, SPEC, e2e-test-plan | [#32](https://github.com/deghosal-2026/oncall-rag/issues/32) | 🔲 |
+| M3.4 | E2E test: generate → process → verify | [#31](https://github.com/deghosal-2026/oncall-rag/issues/31) | ✅ — scripts/test_alert_pipeline.sh |
+| M3.5 | Docs: update TODO, SPEC, e2e-test-plan | [#32](https://github.com/deghosal-2026/oncall-rag/issues/32) | ✅ |
 
 ## Quick Start
 
@@ -80,3 +83,15 @@ oncall-rag dashboard   # Launch the Streamlit dashboard
 python scripts/generate_test_alerts.py   # Drop test alerts in inbox/
 oncall-rag process-alerts                # Process them through RAG
 ```
+
+---
+
+## M4 — Phone Testing (5 tickets)
+
+| # | Title | Issue | Status |
+|---|---|---|---|
+| M4.1 | Discord bot phone testing: send alert snippet from phone, receive RAG answer | [#33](https://github.com/deghosal-2026/oncall-rag/issues/33) | ✅ |
+| M4.2 | Set up Discord bot credentials (app, token, invite to server) | [#34](https://github.com/deghosal-2026/oncall-rag/issues/34) | ✅ |
+| M4.3 | Add DISCORD_BOT_TOKEN to .env and start bot | [#35](https://github.com/deghosal-2026/oncall-rag/issues/35) | ✅ |
+| M4.4 | Test Discord bot from phone — send /query, get answer | [#36](https://github.com/deghosal-2026/oncall-rag/issues/36) | ✅ |
+| M4.5 | E2E test: full flow from phone Discord query to answer | [#37](https://github.com/deghosal-2026/oncall-rag/issues/37) | ✅ |

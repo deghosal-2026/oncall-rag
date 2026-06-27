@@ -173,6 +173,7 @@ oncall-rag query "<question>"              # Retrieve + generate answer
 oncall-rag eval                             # Run eval set, print MRR/recall@k
 oncall-rag chunking-experiment <path>      # Compare 3 chunking strategies
 oncall-rag discord                          # Start the Discord bot
+oncall-rag dashboard                         # Launch the Streamlit dashboard
 ```
 
 - `index` walks `<path>` recursively, chunks each `.md` file, embeds via `all-MiniLM-L6-v2`, stores in ChromaDB
@@ -304,6 +305,9 @@ dependencies = [
     "httpx>=0.27.0",
     "openai>=1.30.0",
     "anthropic>=0.39.0",
+    "discord-py>=2.4.0",
+    "streamlit>=1.36.0",
+    "pandas>=2.2.0",
 ]
 
 [project.scripts]
@@ -352,8 +356,11 @@ oncall-rag/
 │   └── oncall_rag/
 │       ├── __init__.py
 │       ├── __main__.py          # CLI entry: index, query, eval, chunking-experiment, discord
-│       ├── bot.py               # Discord bot (slash commands, on_ready)
+│       ├── bot.py               # Discord bot (slash commands, feedback, query logging)
 │       ├── config.py            # .env loader + pydantic model
+│       ├── dashboard/
+│       │   ├── __init__.py
+│       │   └── app.py           # Streamlit dashboard (metrics, gaps, feedback)
 │       ├── indexer.py           # Document ingestion + chunking (3 strategies)
 │       ├── retriever.py         # ChromaDB embed + search (cached)
 │       ├── responder.py         # Format chunks + LLM → answer
@@ -371,12 +378,14 @@ oncall-rag/
 │   └── public-runbooks/
 ├── data/
 │   ├── chroma_db/               # Local vector store (gitignored)
-│   └── eval.json               # 14 Q&A eval pairs
+│   ├── eval.json               # 14 Q&A eval pairs
+│   ├── feedback.jsonl           # Discord feedback log (gitignored)
+│   └── queries.jsonl           # Discord query log (gitignored)
 └── tests/
     ├── conftest.py              # Fixtures: config, small_corpus, mock_vectorstore, eval_json
-    ├── unit/                    # 38 tests: chunking, retriever, LLM, config, eval
+    ├── unit/                    # 50 tests: chunking, retriever, LLM, config, eval, bot
     ├── integration/             # 6 tests: index, rebuild, query, fallback
-    └── e2e/                     # 9 tests: help, index, eval, chunking-experiment
+    └── e2e/                     # 12 tests: help, index, eval, chunking-experiment, M2 commands
 ```
 
 ## Response Format

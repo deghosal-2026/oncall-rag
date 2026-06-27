@@ -25,6 +25,16 @@ class TestHelp:
         assert "query" in result.stdout
         assert "eval" in result.stdout
         assert "chunking-experiment" in result.stdout
+        assert "discord" in result.stdout
+        assert "dashboard" in result.stdout
+
+    def test_discord_help(self):
+        result = _run("discord", "--help")
+        assert result.returncode == 0
+
+    def test_dashboard_help(self):
+        result = _run("dashboard", "--help")
+        assert result.returncode == 0
 
 
 class TestIndex:

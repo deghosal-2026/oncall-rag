@@ -29,6 +29,23 @@ End-to-end tests exercise the full CLI from a user's perspective: they run `onca
 | 12 | Non-markdown files | Corpus contains `.txt`, `.py` files | Only `.md` files indexed |
 | 13 | Eval with missing eval file | `oncall-rag eval` with missing eval.json | Handles gracefully |
 
+### M2 — Discord Bot & Dashboard
+
+| # | Scenario | Steps | Expected |
+|---|---|---|---|
+| 16 | Discord command available | `oncall-rag discord --help` | Prints usage |
+| 17 | Dashboard command available | `oncall-rag dashboard --help` | Prints usage |
+| 18 | Help shows M2 commands | `oncall-rag --help` | Output includes `discord` and `dashboard` |
+
+### Unit Tests (M2)
+
+| # | Module | Tests |
+|---|---|---|
+| U1 | `bot._parse_sources` | Full answer, sources-only, no-runbook, no-sources |
+| U2 | `bot._answer_to_embed` | No-runbook, full answer, sources-only, plain answer |
+| U3 | `bot._log_feedback` | Writes JSONL, appends multiple entries |
+| U4 | `bot._log_query` | Writes JSONL, tracks has_sources flag |
+
 ### Error Handling
 
 | # | Scenario | Steps | Expected |

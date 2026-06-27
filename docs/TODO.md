@@ -1,10 +1,10 @@
 # RAGoncall — TODO
 
-> Generated: 2026-06-26
+> Generated: 2026-06-27
 > Repo: https://github.com/deghosal-2026/oncall-rag
 >
 > **M1 — CLI RAG: ✅ COMPLETE (16/16)**
-> **M2 — Discord Bot + Dashboard: ▶️ In progress (1/12)**
+> **M2 — Discord Bot + Dashboard: ✅ COMPLETE (12/12)**
 
 ## M1 — CLI RAG (16 tickets)
 
@@ -22,7 +22,7 @@
 | M1.8 | CLI: query command | [#8](https://github.com/deghosal-2026/oncall-rag/issues/8) | ✅ |
 | M1.9 | Eval harness | [#9](https://github.com/deghosal-2026/oncall-rag/issues/9) | ✅ |
 | M1.10 | Eval set generation | [#10](https://github.com/deghosal-2026/oncall-rag/issues/10) | ✅ |
-| M1.11 | Unit + integration tests | [#11](https://github.com/deghosal-2026/oncall-rag/issues/11) | ✅ — 54 tests passing |
+| M1.11 | Unit + integration tests | [#11](https://github.com/deghosal-2026/oncall-rag/issues/11) | ✅ — 68 tests passing |
 | M1.12 | Chunking experiment | [#12](https://github.com/deghosal-2026/oncall-rag/issues/12) | ✅ — header-split wins (0.9524 MRR) |
 | M1.13 | Setup instructions (README) | [#23](https://github.com/deghosal-2026/oncall-rag/issues/23) | ✅ |
 | M1.14 | User guide | [#24](https://github.com/deghosal-2026/oncall-rag/issues/24) | ✅ |
@@ -46,15 +46,15 @@
 |---|---|---|---|
 | M2.1 | Discord bot scaffold | [#13](https://github.com/deghosal-2026/oncall-rag/issues/13) | ✅ — `bot.py`, `/ping`, CLI wiring |
 | M2.1a | Discord setup guide | [#27](https://github.com/deghosal-2026/oncall-rag/issues/27) | ✅ — `docs/setup.md` |
-| M2.2 | Slash command: /query | [#14](https://github.com/deghosal-2026/oncall-rag/issues/14) | ❌ |
-| M2.3 | Feedback collection | [#15](https://github.com/deghosal-2026/oncall-rag/issues/15) | ❌ |
-| M2.4 | Rich response formatting | [#16](https://github.com/deghosal-2026/oncall-rag/issues/16) | ❌ |
-| M2.5 | Dashboard scaffold | [#17](https://github.com/deghosal-2026/oncall-rag/issues/17) | ❌ |
-| M2.6 | Dashboard: query metrics | [#18](https://github.com/deghosal-2026/oncall-rag/issues/18) | ❌ |
-| M2.7 | Dashboard: knowledge gaps | [#19](https://github.com/deghosal-2026/oncall-rag/issues/19) | ❌ |
-| M2.8 | Dashboard: feedback analysis | [#20](https://github.com/deghosal-2026/oncall-rag/issues/20) | ❌ |
-| M2.9 | E2E tests (M2) | [#21](https://github.com/deghosal-2026/oncall-rag/issues/21) | ❌ |
-| M2.10 | README + docs update | [#22](https://github.com/deghosal-2026/oncall-rag/issues/22) | ❌ |
+| M2.2 | Slash command: /query | [#14](https://github.com/deghosal-2026/oncall-rag/issues/14) | ✅ |
+| M2.3 | Feedback collection | [#15](https://github.com/deghosal-2026/oncall-rag/issues/15) | ✅ |
+| M2.4 | Rich response formatting | [#16](https://github.com/deghosal-2026/oncall-rag/issues/16) | ✅ |
+| M2.5 | Dashboard scaffold | [#17](https://github.com/deghosal-2026/oncall-rag/issues/17) | ✅ |
+| M2.6 | Dashboard: query metrics | [#18](https://github.com/deghosal-2026/oncall-rag/issues/18) | ✅ |
+| M2.7 | Dashboard: knowledge gaps | [#19](https://github.com/deghosal-2026/oncall-rag/issues/19) | ✅ |
+| M2.8 | Dashboard: feedback analysis | [#20](https://github.com/deghosal-2026/oncall-rag/issues/20) | ✅ |
+| M2.9 | E2E tests (M2) | [#21](https://github.com/deghosal-2026/oncall-rag/issues/21) | ✅ — 68 tests total (54 + 12 new + 2 e2e) |
+| M2.10 | README + docs update | [#22](https://github.com/deghosal-2026/oncall-rag/issues/22) | ✅ |
 
 ## Quick Start
 
@@ -63,4 +63,6 @@ pip install -e .
 oncall-rag index ./corpus
 oncall-rag query "How do I check a CrashLoopBackOff pod?"
 oncall-rag eval
+oncall-rag discord     # Start the Discord bot
+oncall-rag dashboard   # Launch the Streamlit dashboard
 ```

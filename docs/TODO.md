@@ -2,6 +2,9 @@
 
 > Generated: 2026-06-26
 > Repo: https://github.com/deghosal-2026/oncall-rag
+>
+> **M1 — CLI RAG: ✅ COMPLETE (16/16)**
+> **M2 — Discord Bot + Dashboard: ❌ Not started (0/11)**
 
 ## M1 — CLI RAG (16 tickets)
 

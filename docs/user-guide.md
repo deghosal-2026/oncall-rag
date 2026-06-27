@@ -97,7 +97,7 @@ I don't have a runbook for this.
 oncall-rag eval
 ```
 
-Runs 115 predefined Q&A pairs against your index and reports retrieval quality metrics:
+Runs 14 predefined Q&A pairs against your index and reports retrieval quality metrics:
 
 - **MRR (Mean Reciprocal Rank):** How high the first correct result appears. 1.0 = always rank 1.
 - **Recall@5:** Fraction of queries where the correct source is in the top 5 results.

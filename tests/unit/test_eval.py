@@ -10,7 +10,7 @@ class TestEval:
     def test_returns_metrics_from_eval_file(self, config, eval_json):
         with patch("oncall_rag.eval.retrieve") as mock_retrieve:
             mock_retrieve.return_value = [
-                RetrievedChunk(text="a", source_file="kubernetes/runbook1.md", start_line=1, end_line=2, score=0.9),
+                RetrievedChunk(text="a", source_file="kubernetes/runbook1.md", start_line=42, end_line=47, score=0.9),
             ]
             results = run_eval(config, eval_path=eval_json)
 
@@ -44,7 +44,7 @@ class TestEval:
     def test_mrr_perfect_rank(self, config, eval_json):
         with patch("oncall_rag.eval.retrieve") as mock_retrieve:
             mock_retrieve.return_value = [
-                RetrievedChunk(text="a", source_file="kubernetes/runbook1.md", start_line=1, end_line=2, score=0.95),
+                RetrievedChunk(text="a", source_file="kubernetes/runbook1.md", start_line=42, end_line=47, score=0.95),
             ]
             results = run_eval(config, eval_path=eval_json)
 

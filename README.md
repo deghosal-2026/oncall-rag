@@ -76,7 +76,7 @@ The tool retrieves relevant runbook sections and generates a grounded answer wit
 oncall-rag eval
 ```
 
-Runs 115 Q&A pairs and reports MRR (Mean Reciprocal Rank) and Recall@5.
+Runs 14 Q&A pairs and reports MRR (Mean Reciprocal Rank) and Recall@5.
 
 ### 4. Run chunking strategy comparison
 

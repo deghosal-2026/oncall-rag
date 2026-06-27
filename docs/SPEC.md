@@ -167,9 +167,11 @@ Sources:
 ## CLI Commands
 
 ```
-oncall-rag index <path>          # Ingest markdown files into ChromaDB
-oncall-rag query "<question>"    # Retrieve + generate answer
-oncall-rag eval                  # Run eval set, print MRR/recall@k
+oncall-rag index <path>                    # Ingest markdown files into ChromaDB
+oncall-rag index <path> --rebuild          # Drop and recreate collection
+oncall-rag query "<question>"              # Retrieve + generate answer
+oncall-rag eval                             # Run eval set, print MRR/recall@k
+oncall-rag chunking-experiment <path>      # Compare 3 chunking strategies
 ```
 
 - `index` walks `<path>` recursively, chunks each `.md` file, embeds via `all-MiniLM-L6-v2`, stores in ChromaDB
@@ -211,28 +213,30 @@ oncall-rag eval                  # Run eval set, print MRR/recall@k
 
 ## Chunking Strategy
 
-### Recommended: RecursiveCharacterTextSplitter (LangChain)
+### Recommended: header-split (experiment winner)
 
-Split on `\n\n` first, then `\n`, then spaces. This preserves paragraph and sentence boundaries better than fixed-size character splitting.
+Split on markdown headers (`#`, `##`, etc.), then merge small sections up to ~1.5× chunk_size. Sections exceeding chunk_size are further split with `RecursiveCharacterTextSplitter` using the configured overlap. This preserves section boundaries — best for runbooks with `## Step 1` structure.
 
-Parameters (start):
+**Experiment result:** header-split achieved MRR 0.9524 vs recursive 0.9048 vs fixed-size 0.8893. See `docs/chunking-experiment.md`.
+
+Parameters (current defaults):
 | Param | Value | Rationale |
 |---|---|---|
 | `chunk_size` | 500 chars | Small enough for precision, large enough for context |
 | `chunk_overlap` | 50 chars | Prevent context loss at boundaries |
-| `separators` | `["\n\n", "\n", ". ", " "]` | Paragraph → sentence → word |
+| `chunking_strategy` | `header-split` | Winner of chunking experiment |
 
 ### Experiment Plan
 
 Compare 3 strategies on the eval set and pick the best:
 
-| Strategy | Why test |
-|---|---|
-| Recursive (paragraph-first) | Good for prose runbooks with clear sections |
-| Markdown header split | Better for docs with `## Step 1` structure |
-| Fixed-size (500 chars) | Baseline — simplest, no semantic awareness |
+| Strategy | Why test | MRR |
+|---|---|---|
+| Header-split (winner) | Better for docs with `## Step 1` structure | **0.9524** |
+| Recursive (paragraph-first) | Good for prose runbooks with clear sections | 0.9048 |
+| Fixed-size (500 chars) | Baseline — simplest, no semantic awareness | 0.8893 |
 
-Measure MRR, recall@5, and qualitative coherence (does the chunk make sense alone?) for each. Document in `docs/chunking-experiment.md`.
+Measure MRR, recall@5, and qualitative coherence (does the chunk make sense alone?) for each. Documented in `docs/chunking-experiment.md`.
 
 ## LLM Client Interface
 
@@ -318,9 +322,10 @@ Loaded from `.env` (via `python-dotenv`):
 | `ANTHROPIC_MODEL` | `claude-3-haiku-20240307` | Anthropic model |
 | `CHROMA_PATH` | `./chroma_db` | Vector store directory |
 | `CHUNK_SIZE` | `500` | Chunk size in characters |
-| `CHUNK_OVERLAP` | `50` | Chunk overlap in characters |
+| `CHUNK_OVERLAP` | `50` | Chunk overlap in characters (must be < chunk_size) |
 | `TOP_K` | `5` | Number of chunks to retrieve |
 | `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | Embedding model name |
+| `CHUNKING_STRATEGY` | `header-split` | `header-split`, `recursive`, or `fixed-size` |
 
 ## Project Structure
 
@@ -332,41 +337,42 @@ oncall-rag/
 ├── README.md
 ├── docs/
 │   ├── PRD.md
-│   └── SPEC.md
+│   ├── SPEC.md
+│   ├── TODO.md
+│   ├── architecture.md
+│   ├── chunking-experiment.md
+│   ├── e2e-test-plan.md
+│   └── user-guide.md
+├── scripts/
+│   └── generate_eval.py
 ├── src/
 │   └── oncall_rag/
 │       ├── __init__.py
-│       ├── __main__.py          # CLI entry: index, query, eval
+│       ├── __main__.py          # CLI entry: index, query, eval, chunking-experiment
 │       ├── config.py            # .env loader + pydantic model
-│       ├── indexer.py           # Document ingestion + chunking
-│       ├── retriever.py         # ChromaDB embed + search
-│       ├── llm/
-│       │   ├── __init__.py
-│       │   ├── base.py          # ABC for LLM clients
-│       │   ├── omlx.py          # OmlxClient
-│       │   ├── openai.py        # OpenAIClient
-│       │   └── anthropic.py     # AnthropicClient
+│       ├── indexer.py           # Document ingestion + chunking (3 strategies)
+│       ├── retriever.py         # ChromaDB embed + search (cached)
 │       ├── responder.py         # Format chunks + LLM → answer
-│       └── eval.py              # Eval harness
-├── corpus/                      # Public runbook datasets (gitignored if large)
+│       ├── eval.py              # Eval harness (MRR/Recall@5 with line-range matching)
+│       └── llm/
+│           ├── __init__.py
+│           ├── base.py          # ABC for LLM clients
+│           ├── omlx.py          # OmlxClient
+│           ├── openai.py        # OpenAIClient
+│           └── anthropic.py     # AnthropicClient
+├── corpus/                      # Public runbook datasets
 │   ├── kubernetes/
 │   ├── grafana/
 │   ├── google-sre/
 │   └── public-runbooks/
 ├── data/
-│   └── chroma_db/               # Local vector store (gitignored)
+│   ├── chroma_db/               # Local vector store (gitignored)
+│   └── eval.json               # 14 Q&A eval pairs
 └── tests/
     ├── conftest.py              # Fixtures: config, small_corpus, mock_vectorstore, eval_json
-    ├── unit/
-    │   ├── test_chunking.py     # 9 tests: walking, splitting, edge cases
-    │   ├── test_retriever.py    # 4 tests: retrieval, empty, metadata, query passing
-    │   ├── test_llm_client.py   # 13 tests: ABC, Omlx, OpenAI, Anthropic
-    │   ├── test_config.py       # 7 tests: defaults, validation, env loading
-    │   └── test_eval.py         # 5 tests: metrics, missing file, empty set
-    ├── integration/
-    │   └── test_pipeline.py     # 6 tests: index, rebuild, query, fallback
-    └── e2e/
-        └── test_cli.py          # 2 tests: help, missing arg
+    ├── unit/                    # 38 tests: chunking, retriever, LLM, config, eval
+    ├── integration/             # 6 tests: index, rebuild, query, fallback
+    └── e2e/                     # 9 tests: help, index, eval, chunking-experiment
 ```
 
 ## Response Format
@@ -469,7 +475,7 @@ Labels: `milestone`, `ticket`
 | M1.7 | CLI: `index` command | Wire indexer + embedding into `oncall-rag index <path>` | Indexes corpus, prints file/chunk summary |
 | M1.8 | CLI: `query` command | Wire retriever + responder into `oncall-rag query "..."` | Returns answer with sources or "I don't have a runbook for this" |
 | M1.9 | Eval harness | `eval.py` — load `data/eval.json`, run queries, compute MRR/recall@k | `oncall-rag eval` prints per-question results + aggregate metrics |
-| M1.10 | Eval set generation | AI-generate 10–15 Q&A pairs from corpus, validate manually | `data/eval.json` with validated entries |
+| M1.10 | Eval set generation | AI-generate 14 Q&A pairs from corpus, validate manually | `data/eval.json` with validated entries |
 | M1.11 | Unit + integration tests | Tests for chunking, retriever, LLM clients, pipeline | ≥80% coverage on core modules |
 | M1.12 | Chunking experiment | Run 3 strategies (recursive, header-split, fixed-size), document in `docs/chunking-experiment.md` | Recommendation documented with MRR/recall@5 for each |
 | M1.13 | Setup instructions (README) | Prerequisites, install, .env config, quick start, troubleshooting | README covers end-to-end setup for M1 |

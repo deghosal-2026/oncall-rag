@@ -1,13 +1,21 @@
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from oncall_rag.config import Config
+
+
+@pytest.fixture(autouse=True)
+def _clear_caches():
+    from oncall_rag import indexer, retriever
+    indexer._embeddings_cache.clear()
+    retriever._embeddings_cache.clear()
+    retriever._vectorstore_cache.clear()
+    yield
 
 
 @pytest.fixture

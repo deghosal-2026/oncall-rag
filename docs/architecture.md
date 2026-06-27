@@ -109,7 +109,7 @@ Recall@5 = correct_in_top5 / len(questions)
 
 ### Chunking: header-split by default
 
-We tested 3 strategies (recursive, header-split, fixed-size) on 115 eval pairs. Header-split achieved the highest MRR (0.9524) because runbooks are naturally organized by markdown headers. Each chunk maps to a coherent section — the entire relevant procedure stays in one chunk. See `docs/chunking-experiment.md`.
+We tested 3 strategies (recursive, header-split, fixed-size) on 14 eval pairs. Header-split achieved the highest MRR (0.9524) because runbooks are naturally organized by markdown headers. Each chunk maps to a coherent section — the entire relevant procedure stays in one chunk. See `docs/chunking-experiment.md`.
 
 ### Embedding: all-MiniLM-L6-v2
 
@@ -141,7 +141,7 @@ oncall-rag/
 ├── corpus/                 # Runbook markdown files
 ├── data/
 │   ├── chroma_db/          # Vector store (gitignored)
-│   └── eval.json           # 115 Q&A eval pairs
+│   └── eval.json           # 14 Q&A eval pairs
 ├── docs/
 │   ├── PRD.md
 │   ├── SPEC.md

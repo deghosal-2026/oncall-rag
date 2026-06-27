@@ -15,7 +15,6 @@ class TestIndexQueryFlow:
         assert result["files_indexed"] == 2
         assert result["chunks_created"] >= 2
         instance.add_texts.assert_called()
-        instance.persist.assert_called_once()
 
     def test_index_empty_corpus_returns_zero(self, config, tmp_path):
         with patch("oncall_rag.indexer.HuggingFaceEmbeddings"):

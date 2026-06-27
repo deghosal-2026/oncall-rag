@@ -7,6 +7,25 @@ from oncall_rag.config import Config
 from oncall_rag.retriever import retrieve
 
 
+def _parse_lines(spec: str) -> tuple[int, int]:
+    spec = spec.strip()
+    if "-" in spec:
+        start, end = spec.split("-", 1)
+        return int(start), int(end)
+    val = int(spec)
+    return val, val
+
+
+def _is_match(chunk_source: str, chunk_start: int, chunk_end: int, q: dict) -> bool:
+    if chunk_source != q.get("source_file", ""):
+        return False
+    source_lines = q.get("source_lines")
+    if not source_lines:
+        return True
+    eval_start, eval_end = _parse_lines(str(source_lines))
+    return not (chunk_end < eval_start or chunk_start > eval_end)
+
+
 def run_eval(config: Config, eval_path: str = "data/eval.json") -> dict:
     path = Path(eval_path)
     if not path.exists():
@@ -26,7 +45,7 @@ def run_eval(config: Config, eval_path: str = "data/eval.json") -> dict:
         rank = 0
         found = False
         for i, c in enumerate(chunks):
-            if c.source_file == q.get("source_file", ""):
+            if _is_match(c.source_file, c.start_line, c.end_line, q):
                 rank = i + 1
                 found = True
                 break

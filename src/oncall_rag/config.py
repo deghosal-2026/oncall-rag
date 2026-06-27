@@ -19,7 +19,7 @@ class Config(BaseModel):
     chunk_overlap: int = Field(default=50)
     top_k: int = Field(default=5)
     embedding_model: str = Field(default="all-MiniLM-L6-v2")
-    chunking_strategy: str = Field(default="recursive")
+    chunking_strategy: str = Field(default="header-split")
 
     @field_validator("chunking_strategy")
     @classmethod
@@ -34,6 +34,19 @@ class Config(BaseModel):
         if v not in ("omlx", "openai", "anthropic"):
             raise ValueError(f"Invalid LLM provider: {v}")
         return v
+
+    @field_validator("chunk_overlap")
+    @classmethod
+    def validate_overlap(cls, v: int) -> int:
+        if v < 0:
+            raise ValueError("chunk_overlap must be >= 0")
+        return v
+
+    def model_post_init(self, __context) -> None:
+        if self.chunk_overlap >= self.chunk_size:
+            raise ValueError(
+                f"chunk_overlap ({self.chunk_overlap}) must be < chunk_size ({self.chunk_size})"
+            )
 
 
 _ENV_MAP = {

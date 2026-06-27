@@ -1,30 +1,24 @@
 from __future__ import annotations
 
-import json
-
-import httpx
+from openai import OpenAI
 
 from oncall_rag.llm.base import LLMClient
 
 
 class OmlxClient(LLMClient):
-    def __init__(self, endpoint: str, model: str, system_prompt: str | None = None):
+    def __init__(self, endpoint: str, model: str, api_key: str = "", system_prompt: str | None = None):
         super().__init__(system_prompt)
-        self.endpoint = endpoint.rstrip("/")
+        self.client = OpenAI(base_url=f"{endpoint.rstrip('/')}/v1", api_key=api_key)
         self.model = model
 
     def generate(self, prompt: str, **kwargs) -> str:
-        payload = {
-            "model": self.model,
-            "prompt": f"{self.system_prompt}\n\n{prompt}",
-            "stream": False,
-            "options": {"temperature": 0, "num_predict": 1024},
-        }
-        response = httpx.post(
-            f"{self.endpoint}/api/generate",
-            json=payload,
-            timeout=30,
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0,
+            max_tokens=1024,
         )
-        response.raise_for_status()
-        data = response.json()
-        return data.get("response", "")
+        return response.choices[0].message.content or ""

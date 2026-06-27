@@ -21,3 +21,6 @@ data/queries.jsonl
 alerts/inbox/
 alerts/outbox/
 alerts/archive/
+
+# Historical alert pipeline snapshots
+data/alert-pipeline-samples/

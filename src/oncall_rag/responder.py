@@ -10,7 +10,7 @@ def _build_llm_client(config: Config):
     from oncall_rag.llm.anthropic import AnthropicClient
 
     if config.llm_provider == "omlx":
-        return OmlxClient(endpoint=config.omlx_endpoint, model=config.omlx_model)
+        return OmlxClient(endpoint=config.omlx_endpoint, model=config.omlx_model, api_key=config.omlx_api_key or "")
     elif config.llm_provider == "openai":
         if not config.openai_api_key:
             raise ValueError("OPENAI_API_KEY is not set")

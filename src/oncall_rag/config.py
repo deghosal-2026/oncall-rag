@@ -10,6 +10,7 @@ class Config(BaseModel):
     llm_provider: str = Field(default="omlx")
     omlx_endpoint: str = Field(default="http://localhost:11434")
     omlx_model: str = Field(default="qwen2.5-coder:7b")
+    omlx_api_key: str | None = Field(default=None)
     openai_api_key: str | None = Field(default=None)
     openai_model: str = Field(default="gpt-4o-mini")
     anthropic_api_key: str | None = Field(default=None)
@@ -54,6 +55,7 @@ _ENV_MAP = {
     "LLM_PROVIDER": "llm_provider",
     "OMLX_ENDPOINT": "omlx_endpoint",
     "OMLX_MODEL": "omlx_model",
+    "OMLX_API_KEY": "omlx_api_key",
     "OPENAI_API_KEY": "openai_api_key",
     "OPENAI_MODEL": "openai_model",
     "ANTHROPIC_API_KEY": "anthropic_api_key",

@@ -22,17 +22,23 @@
 | M1.8 | CLI: query command | [#8](https://github.com/deghosal-2026/oncall-rag/issues/8) | ✅ |
 | M1.9 | Eval harness | [#9](https://github.com/deghosal-2026/oncall-rag/issues/9) | ✅ |
 | M1.10 | Eval set generation | [#10](https://github.com/deghosal-2026/oncall-rag/issues/10) | ✅ |
-| M1.11 | Unit + integration tests | [#11](https://github.com/deghosal-2026/oncall-rag/issues/11) | ✅ — 47 tests passing |
-
-### Next Up
-
-| # | Title | Issue | Status |
-|---|---|---|---|
+| M1.11 | Unit + integration tests | [#11](https://github.com/deghosal-2026/oncall-rag/issues/11) | ✅ — 54 tests passing |
 | M1.12 | Chunking experiment | [#12](https://github.com/deghosal-2026/oncall-rag/issues/12) | ✅ — header-split wins (0.9524 MRR) |
 | M1.13 | Setup instructions (README) | [#23](https://github.com/deghosal-2026/oncall-rag/issues/23) | ✅ |
 | M1.14 | User guide | [#24](https://github.com/deghosal-2026/oncall-rag/issues/24) | ✅ |
 | M1.15 | Architecture guide | [#25](https://github.com/deghosal-2026/oncall-rag/issues/25) | ✅ |
 | M1.16 | E2E test plan + tests | [#26](https://github.com/deghosal-2026/oncall-rag/issues/26) | ✅ — 9 e2e tests passing |
+
+### Code Review Pass (2026-06-27)
+
+15 issues found and fixed:
+
+| Category | Fixes |
+|---|---|
+| Bugs | Default strategy → header-split; created .env.example; eval count 14 not 115 in docs; updated stale SPEC.md |
+| Performance | Cached HuggingFaceEmbeddings; cached Chroma vectorstore in retriever |
+| Correctness | Offset-based line numbers; eval matches by source_lines overlap; file-level dedup; fixed infinite loop guard; config validates overlap < size |
+| Code quality | Removed deprecated persist(); header-split applies overlap; removed dead imports; experiment writes to separate file; added logging |
 
 ## M2 — Discord Bot + Dashboard (11 tickets)
 

@@ -3,3 +3,4 @@ from oncall_rag.indexer import index_documents
 from oncall_rag.retriever import retrieve, RetrievedChunk
 from oncall_rag.responder import query_runbooks
 from oncall_rag.eval import run_eval
+from oncall_rag.bot import OncallBot

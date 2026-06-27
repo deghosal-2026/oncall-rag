@@ -37,6 +37,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(prog="oncall-rag", description="Runbook RAG assistant")
     sub = parser.add_subparsers(dest="command", required=True)
 
+    sub.add_parser("discord", help="Start the Discord bot")
+
     index_parser = sub.add_parser("index", help="Ingest markdown files into ChromaDB")
     index_parser.add_argument("path", help="Directory of markdown files")
     index_parser.add_argument("--rebuild", action="store_true", help="Drop and recreate collection")
@@ -77,6 +79,14 @@ def main() -> None:
         if "error" in results:
             logger.warning(results["error"])
         print(f"MRR: {results['mrr']:.3f}, Recall@5: {results['recall_at_5']:.3f}")
+
+    elif args.command == "discord":
+        if not config.discord_bot_token:
+            print("DISCORD_BOT_TOKEN is not set. Add it to .env or set the environment variable.")
+            return
+        from oncall_rag.bot import OncallBot
+        bot = OncallBot(config)
+        bot.run(config.discord_bot_token, log_handler=None)
 
     elif args.command == "chunking-experiment":
         results = run_experiment(config, args.path, args.eval)

@@ -19,6 +19,7 @@ class Config(BaseModel):
     chunk_overlap: int = Field(default=50)
     top_k: int = Field(default=5)
     embedding_model: str = Field(default="all-MiniLM-L6-v2")
+    discord_bot_token: str | None = Field(default=None)
     chunking_strategy: str = Field(default="header-split")
 
     @field_validator("chunking_strategy")
@@ -63,6 +64,7 @@ _ENV_MAP = {
     "TOP_K": "top_k",
     "EMBEDDING_MODEL": "embedding_model",
     "CHUNKING_STRATEGY": "chunking_strategy",
+    "DISCORD_BOT_TOKEN": "discord_bot_token",
 }
 
 

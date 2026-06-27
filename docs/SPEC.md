@@ -172,6 +172,7 @@ oncall-rag index <path> --rebuild          # Drop and recreate collection
 oncall-rag query "<question>"              # Retrieve + generate answer
 oncall-rag eval                             # Run eval set, print MRR/recall@k
 oncall-rag chunking-experiment <path>      # Compare 3 chunking strategies
+oncall-rag discord                          # Start the Discord bot
 ```
 
 - `index` walks `<path>` recursively, chunks each `.md` file, embeds via `all-MiniLM-L6-v2`, stores in ChromaDB
@@ -325,6 +326,7 @@ Loaded from `.env` (via `python-dotenv`):
 | `CHUNK_OVERLAP` | `50` | Chunk overlap in characters (must be < chunk_size) |
 | `TOP_K` | `5` | Number of chunks to retrieve |
 | `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | Embedding model name |
+| `DISCORD_BOT_TOKEN` | — | Discord bot token (required for `oncall-rag discord`) |
 | `CHUNKING_STRATEGY` | `header-split` | `header-split`, `recursive`, or `fixed-size` |
 
 ## Project Structure
@@ -342,13 +344,15 @@ oncall-rag/
 │   ├── architecture.md
 │   ├── chunking-experiment.md
 │   ├── e2e-test-plan.md
+│   ├── setup.md
 │   └── user-guide.md
 ├── scripts/
 │   └── generate_eval.py
 ├── src/
 │   └── oncall_rag/
 │       ├── __init__.py
-│       ├── __main__.py          # CLI entry: index, query, eval, chunking-experiment
+│       ├── __main__.py          # CLI entry: index, query, eval, chunking-experiment, discord
+│       ├── bot.py               # Discord bot (slash commands, on_ready)
 │       ├── config.py            # .env loader + pydantic model
 │       ├── indexer.py           # Document ingestion + chunking (3 strategies)
 │       ├── retriever.py         # ChromaDB embed + search (cached)

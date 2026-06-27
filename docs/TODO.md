@@ -4,7 +4,7 @@
 > Repo: https://github.com/deghosal-2026/oncall-rag
 >
 > **M1 — CLI RAG: ✅ COMPLETE (16/16)**
-> **M2 — Discord Bot + Dashboard: ❌ Not started (0/11)**
+> **M2 — Discord Bot + Dashboard: ▶️ In progress (1/12)**
 
 ## M1 — CLI RAG (16 tickets)
 
@@ -40,22 +40,21 @@
 | Correctness | Offset-based line numbers; eval matches by source_lines overlap; file-level dedup; fixed infinite loop guard; config validates overlap < size |
 | Code quality | Removed deprecated persist(); header-split applies overlap; removed dead imports; experiment writes to separate file; added logging |
 
-## M2 — Discord Bot + Dashboard (11 tickets)
+## M2 — Discord Bot + Dashboard (12 tickets)
 
-All not started.
-
-| # | Title | Issue |
-|---|---|---|
-| M2.1 | Discord bot scaffold | [#13](https://github.com/deghosal-2026/oncall-rag/issues/13) |
-| M2.2 | Slash command: /query | [#14](https://github.com/deghosal-2026/oncall-rag/issues/14) |
-| M2.3 | Feedback collection | [#15](https://github.com/deghosal-2026/oncall-rag/issues/15) |
-| M2.4 | Rich response formatting | [#16](https://github.com/deghosal-2026/oncall-rag/issues/16) |
-| M2.5 | Dashboard scaffold | [#17](https://github.com/deghosal-2026/oncall-rag/issues/17) |
-| M2.6 | Dashboard: query metrics | [#18](https://github.com/deghosal-2026/oncall-rag/issues/18) |
-| M2.7 | Dashboard: knowledge gaps | [#19](https://github.com/deghosal-2026/oncall-rag/issues/19) |
-| M2.8 | Dashboard: feedback analysis | [#20](https://github.com/deghosal-2026/oncall-rag/issues/20) |
-| M2.9 | E2E tests (M2) | [#21](https://github.com/deghosal-2026/oncall-rag/issues/21) |
-| M2.10 | README + docs update | [#22](https://github.com/deghosal-2026/oncall-rag/issues/22) |
+| # | Title | Issue | Status |
+|---|---|---|---|
+| M2.1 | Discord bot scaffold | [#13](https://github.com/deghosal-2026/oncall-rag/issues/13) | ✅ — `bot.py`, `/ping`, CLI wiring |
+| M2.1a | Discord setup guide | [#27](https://github.com/deghosal-2026/oncall-rag/issues/27) | ✅ — `docs/setup.md` |
+| M2.2 | Slash command: /query | [#14](https://github.com/deghosal-2026/oncall-rag/issues/14) | ❌ |
+| M2.3 | Feedback collection | [#15](https://github.com/deghosal-2026/oncall-rag/issues/15) | ❌ |
+| M2.4 | Rich response formatting | [#16](https://github.com/deghosal-2026/oncall-rag/issues/16) | ❌ |
+| M2.5 | Dashboard scaffold | [#17](https://github.com/deghosal-2026/oncall-rag/issues/17) | ❌ |
+| M2.6 | Dashboard: query metrics | [#18](https://github.com/deghosal-2026/oncall-rag/issues/18) | ❌ |
+| M2.7 | Dashboard: knowledge gaps | [#19](https://github.com/deghosal-2026/oncall-rag/issues/19) | ❌ |
+| M2.8 | Dashboard: feedback analysis | [#20](https://github.com/deghosal-2026/oncall-rag/issues/20) | ❌ |
+| M2.9 | E2E tests (M2) | [#21](https://github.com/deghosal-2026/oncall-rag/issues/21) | ❌ |
+| M2.10 | README + docs update | [#22](https://github.com/deghosal-2026/oncall-rag/issues/22) | ❌ |
 
 ## Quick Start
 

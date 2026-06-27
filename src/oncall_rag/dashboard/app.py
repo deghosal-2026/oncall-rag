@@ -55,7 +55,7 @@ with tab1:
         st.subheader("Recent Queries")
         df_queries = pd.DataFrame(queries)
         recent = df_queries.tail(10)[["timestamp", "question", "has_sources"]].iloc[::-1]
-        st.dataframe(recent, use_container_width=True)
+        st.dataframe(recent, width="stretch")
 
 with tab2:
     st.header("Query Metrics")
@@ -99,7 +99,7 @@ with tab3:
         df_unanswered = pd.DataFrame(unanswered)
         st.dataframe(
             df_unanswered[["timestamp", "question"]],
-            use_container_width=True,
+            width="stretch",
         )
     else:
         st.success("All queries found relevant sources!")
@@ -111,7 +111,7 @@ with tab3:
             df_down = pd.DataFrame(downvoted)
             st.dataframe(
                 df_down[["timestamp", "question", "sources"]],
-                use_container_width=True,
+                width="stretch",
             )
         else:
             st.info("No downvotes recorded yet.")
@@ -145,7 +145,7 @@ with tab4:
                     }
                 )
             df_rank = pd.DataFrame(rows).sort_values("Score", ascending=False)
-            st.dataframe(df_rank, use_container_width=True)
+            st.dataframe(df_rank, width="stretch")
 
         st.subheader("Feedback Over Time")
         df_fb["date"] = pd.to_datetime(df_fb["timestamp"]).dt.date

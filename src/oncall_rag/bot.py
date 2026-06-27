@@ -16,6 +16,7 @@ from oncall_rag.config import Config
 logger = logging.getLogger("oncall-rag.bot")
 
 FEEDBACK_PATH = Path("data/feedback.jsonl")
+QUERIES_PATH = Path("data/queries.jsonl")
 
 
 class OncallBot(discord.Client):
@@ -59,6 +60,7 @@ async def query_command(
         answer = "Something went wrong. Check the logs."
 
     embed, sources = _answer_to_embed(answer)
+    _log_query(question, answer, sources)
     view = FeedbackView(question, answer, sources)
     await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
@@ -136,6 +138,19 @@ def _log_feedback(
     with open(FEEDBACK_PATH, "a") as f:
         f.write(json.dumps(entry) + "\n")
     logger.info("Feedback logged: %s for Q=%r", rating, question[:60])
+
+
+def _log_query(question: str, answer: str, sources: list[str]) -> None:
+    entry = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "question": question,
+        "answer": answer,
+        "sources": sources,
+        "has_sources": bool(sources),
+    }
+    QUERIES_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(QUERIES_PATH, "a") as f:
+        f.write(json.dumps(entry) + "\n")
 
 
 class FeedbackView(View):

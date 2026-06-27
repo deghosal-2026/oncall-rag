@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+from pathlib import Path
 
 from oncall_rag.config import load_config, Config
 
@@ -38,6 +39,7 @@ def main() -> None:
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("discord", help="Start the Discord bot")
+    sub.add_parser("dashboard", help="Start the Streamlit dashboard")
 
     index_parser = sub.add_parser("index", help="Ingest markdown files into ChromaDB")
     index_parser.add_argument("path", help="Directory of markdown files")
@@ -87,6 +89,12 @@ def main() -> None:
         from oncall_rag.bot import OncallBot
         bot = OncallBot(config)
         bot.run(config.discord_bot_token, log_handler=None)
+
+    elif args.command == "dashboard":
+        import sys
+        from streamlit.web import cli as st_cli
+        dashboard_path = str(Path(__file__).resolve().parent / "dashboard" / "app.py")
+        sys.exit(st_cli.main(["run", dashboard_path]))
 
     elif args.command == "chunking-experiment":
         results = run_experiment(config, args.path, args.eval)

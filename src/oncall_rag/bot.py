@@ -52,13 +52,44 @@ async def query_command(
         logger.exception("RAG query failed")
         answer = "Something went wrong. Check the logs."
 
-    MAX_LEN = 1900
-    if len(answer) <= MAX_LEN:
-        await interaction.followup.send(answer, ephemeral=True)
+    embed = _answer_to_embed(answer)
+    await interaction.followup.send(embed=embed, ephemeral=True)
+
+
+def _answer_to_embed(raw: str) -> discord.Embed:
+    if raw == "I don't have a runbook for this.":
+        embed = discord.Embed(
+            title="No runbook found",
+            description=raw,
+            color=discord.Color.orange(),
+        )
+        return embed
+
+    if raw.startswith("Sources:\n"):
+        answer_text = "*No LLM answer generated — showing raw sources.*"
+        sources_text = raw[len("Sources:\n"):]
+    elif "\n\nSources:\n" in raw:
+        answer_text, sources_text = raw.split("\n\nSources:\n", 1)
     else:
-        parts = []
-        for i in range(0, len(answer), MAX_LEN):
-            parts.append(answer[i : i + MAX_LEN])
-        await interaction.followup.send(parts[0], ephemeral=True)
-        for part in parts[1:]:
-            await interaction.followup.send(part, ephemeral=True)
+        embed = discord.Embed(
+            title="Answer",
+            description=raw[:4096],
+            color=discord.Color.blue(),
+        )
+        embed.set_footer(text="Thumbs up/down to rate this answer")
+        return embed
+
+    embed = discord.Embed(
+        title="Answer",
+        description=answer_text[:4096] if len(answer_text) > 4096 else answer_text,
+        color=discord.Color.blue(),
+    )
+
+    sources_lines = [s.strip("- ").strip() for s in sources_text.strip().split("\n") if s.strip()]
+    for i, src in enumerate(sources_lines, 1):
+        name = f"Source {i}"
+        value = f"`{src}`"[:1024]
+        embed.add_field(name=name, value=value, inline=True)
+
+    embed.set_footer(text="Thumbs up/down to rate this answer")
+    return embed

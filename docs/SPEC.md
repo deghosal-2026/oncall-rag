@@ -17,6 +17,153 @@
                      └──────────────┘     └──────────────┘
 ```
 
+## E2E Data Flow
+
+### `index <path>` — Ingest
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│  oncall-rag index ./corpus                                                 │
+│  __main__.py: index_documents(path, config, rebuild=False)                 │
+│                                                                            │
+│  corpus/*.md ──► _walk_markdown(path) ──► list[Path]                      │
+│  (recursive        (skips >1MB,             │                              │
+│   *.md only)        non-md)                 │                              │
+│                                             ▼                              │
+│                              _split_file(file, chunk_size, chunk_overlap)  │
+│                              RecursiveCharacterTextSplitter                │
+│                              separators=["\n\n", "\n", ". ", " "]          │
+│                                             │                              │
+│                                             ▼                              │
+│                              list[Chunk(text, source_file,                 │
+│                                        start_line, end_line)]              │
+│                                             │                              │
+│                                             ▼                              │
+│                    HuggingFaceEmbeddings(model_name)                        │
+│                    (all-MiniLM-L6-v2)        │                              │
+│                                              ▼                             │
+│                    Chroma(persist_directory, collection_name="runbooks")    │
+│                    vectorstore.add_texts(texts, metadatas)                 │
+│                    vectorstore.persist()                                    │
+│                                              │                             │
+│                                              ▼                             │
+│                    Return: {"files_indexed": N, "chunks_created": M}       │
+└────────────────────────────────────────────────────────────────────────────┘
+```
+
+### `query "<question>"` — Retrieve + Generate
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│  oncall-rag query "How to debug CrashLoopBackOff?"                        │
+│  __main__.py: query_runbooks(question, config)                             │
+│                                                                            │
+│  question ──► retrieve(question, config) ──► list[RetrievedChunk]         │
+│                   │                                                       │
+│                   ├─► HuggingFaceEmbeddings(model_name)                   │
+│                   ├─► Chroma.similarity_search_with_score(query, k=top_k) │
+│                   │                                                       │
+│                   ▼                                                       │
+│  RetrievedChunk[]                                                          │
+│    text: str          (page_content from Chroma doc)                       │
+│    source_file: str   (metadata["source_file"])                            │
+│    start_line: int    (metadata["start_line"])                             │
+│    end_line: int      (metadata["end_line"])                              │
+│    score: float       (cosine distance from Chroma)                        │
+│                                                                            │
+│  if empty ──► return "I don't have a runbook for this."                   │
+│                                                                            │
+│  _build_llm_client(config)                                                 │
+│    LLM_PROVIDER=omlx    ──► OmlxClient(endpoint, model)                   │
+│    LLM_PROVIDER=openai  ──► OpenAIClient(api_key, model)                  │
+│    LLM_PROVIDER=anthropic──► AnthropicClient(api_key, model)               │
+│                                                                            │
+│  Prompt template:                                                          │
+│    "Context:\n---\n[chunk1 text] (source: file.md:N-M)\n---\n              │
+│     ...\n\nQuestion: {question}"                                           │
+│                                                                            │
+│  client.generate(prompt, temperature=0, max_tokens=1024)                  │
+│                                                                            │
+│  if LLM returns answer ──► answer + "Sources:\n  - file.md:N-M"           │
+│  if LLM fails/empty    ──► fallback: raw sources list                     │
+└────────────────────────────────────────────────────────────────────────────┘
+```
+
+### `eval` — Measure Retrieval Quality
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│  oncall-rag eval                                                           │
+│  __main__.py: run_eval(config, eval_path="data/eval.json")                │
+│                                                                            │
+│  data/eval.json ──► load ──► list[questions]                              │
+│  {                                                                         │
+│    "questions": [                          │                               │
+│      {"id": "k8s-001",                     │                               │
+│       "question": "...",                   │                               │
+│       "answer": "...",                     │                               │
+│       "source_file": "kubernetes/....md",  │                               │
+│       "source_lines": "42-47"}             │                               │
+│    ]                                        │                              │
+│  }                                          │                              │
+│                                             ▼                              │
+│  For each question:                                                        │
+│    chunks = retrieve(q["question"], config)                                │
+│    find rank of chunk where source_file matches q["source_file"]           │
+│    if found: reciprocal_rank = 1/rank; recall@5 += 1                      │
+│    if not:   reciprocal_rank = 0                                           │
+│                                             │                              │
+│                                             ▼                              │
+│  MRR = sum(reciprocal_ranks) / len(questions)                              │
+│  Recall@5 = correct_in_top5 / len(questions)                               │
+│  Return: {"mrr": float, "recall_at_5": float}                             │
+└────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Response Format (M1 — Plain Text)
+
+```
+Source: kubernetes/troubleshooting/pods.md:42-47
+──────────────────────────────────────────────
+Step 1: Run `kubectl describe pod <name>` to check events.
+
+Sources:
+  - kubernetes/troubleshooting/pods.md:42-47
+  - kubernetes/troubleshooting/pods.md:89-95
+```
+
+### Module Dependency Graph
+
+```
+  __main__.py
+     │
+     ├──► config.py         (Config model, load_config from .env)
+     │
+     ├──► indexer.py        (_walk_markdown, _split_file, _make_embedding_model,
+     │       │               index_documents)
+     │       │
+     │       ├──► langchain_text_splitters.RecursiveCharacterTextSplitter
+     │       ├──► langchain_community.embeddings.HuggingFaceEmbeddings
+     │       └──► langchain_community.vectorstores.Chroma
+     │
+     ├──► responder.py      (_build_llm_client, query_runbooks)
+     │       │
+     │       ├──► retriever.py  (retrieve, RetrievedChunk)
+     │       │       │
+     │       │       ├──► langchain_community.embeddings.HuggingFaceEmbeddings
+     │       │       └──► langchain_community.vectorstores.Chroma
+     │       │
+     │       └──► llm/
+     │               ├── base.py       (LLMClient ABC)
+     │               ├── omlx.py       (OmlxClient — httpx POST /api/generate)
+     │               ├── openai.py     (OpenAIClient — openai.ChatCompletion)
+     │               └── anthropic.py  (AnthropicClient — anthropic.messages)
+     │
+     └──► eval.py           (run_eval)
+             │
+             └──► retriever.py
+```
+
 ## CLI Commands
 
 ```
@@ -209,15 +356,17 @@ oncall-rag/
 ├── data/
 │   └── chroma_db/               # Local vector store (gitignored)
 └── tests/
-    ├── conftest.py
+    ├── conftest.py              # Fixtures: config, small_corpus, mock_vectorstore, eval_json
     ├── unit/
-    │   ├── test_chunking.py
-    │   ├── test_retriever.py
-    │   └── test_llm_client.py
+    │   ├── test_chunking.py     # 9 tests: walking, splitting, edge cases
+    │   ├── test_retriever.py    # 4 tests: retrieval, empty, metadata, query passing
+    │   ├── test_llm_client.py   # 13 tests: ABC, Omlx, OpenAI, Anthropic
+    │   ├── test_config.py       # 7 tests: defaults, validation, env loading
+    │   └── test_eval.py         # 5 tests: metrics, missing file, empty set
     ├── integration/
-    │   └── test_pipeline.py
+    │   └── test_pipeline.py     # 6 tests: index, rebuild, query, fallback
     └── e2e/
-        └── test_cli.py
+        └── test_cli.py          # 2 tests: help, missing arg
 ```
 
 ## Response Format

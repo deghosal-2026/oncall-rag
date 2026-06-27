@@ -2,6 +2,19 @@
 
 Local-first RAG assistant for on-call engineers — answers queries from runbooks via **CLI**, **Discord bot**, **Streamlit dashboard**, and a **FIFO alert pipeline**, all with source citations.
 
+> **Status: ✅ Complete** — 37 issues closed, 4 milestones delivered. See [docs/CLOSEOUT.md](docs/CLOSEOUT.md).
+
+## What's Built
+
+| Channel | What it does | How to run |
+|---|---|---|
+| **CLI** | Query runbooks from terminal with grounded LLM answers | `oncall-rag query "..."` |
+| **Discord Bot** | `/ping`, `/query` slash commands with rich embeds + 👍/👎 feedback | `oncall-rag discord` |
+| **Dashboard** | Streamlit UI with query metrics, knowledge gaps, feedback analysis | `oncall-rag dashboard` |
+| **Alert Pipeline** | FIFO file-based: `alerts/inbox/` → RAG → `alerts/outbox/` | `oncall-rag process-alerts` |
+
+**Verified live** (2026-06-27): `/query` tested from Discord mobile app — sourced answer received. Feedback 👍/👎 logged.
+
 ## Prerequisites
 
 - **Python 3.11+**
@@ -56,7 +69,14 @@ CHROMA_PATH=./data/chroma_db
 
 ## Quick Start
 
-### 1. Index your runbooks
+Vector store is checked in — can query immediately after install:
+
+```bash
+pip install -e .
+oncall-rag query "Why is my pod stuck in CrashLoopBackOff?"
+```
+
+To re-index or use a different corpus:
 
 ```bash
 # Index all markdown files in ./corpus
@@ -165,6 +185,8 @@ oncall-rag/
 │   ├── PRD.md                  # Product requirements
 │   ├── SPEC.md                 # Technical specification
 │   ├── TODO.md                 # Task tracker
+│   ├── CLOSEOUT.md             # Full project closeout report
+│   ├── discord-bot-architecture.md  # Discord bot architecture
 │   ├── user-guide.md           # User guide
 │   ├── setup.md                # Discord bot setup
 │   └── chunking-experiment.md  # Chunking strategy results

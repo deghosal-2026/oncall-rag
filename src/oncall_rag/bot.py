@@ -1,15 +1,21 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
+from datetime import datetime, timezone
 from functools import partial
+from pathlib import Path
 
 import discord
 from discord import app_commands
+from discord.ui import Button, View
 
 from oncall_rag.config import Config
 
 logger = logging.getLogger("oncall-rag.bot")
+
+FEEDBACK_PATH = Path("data/feedback.jsonl")
 
 
 class OncallBot(discord.Client):
@@ -52,32 +58,48 @@ async def query_command(
         logger.exception("RAG query failed")
         answer = "Something went wrong. Check the logs."
 
-    embed = _answer_to_embed(answer)
-    await interaction.followup.send(embed=embed, ephemeral=True)
+    embed, sources = _answer_to_embed(answer)
+    view = FeedbackView(question, answer, sources)
+    await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
 
-def _answer_to_embed(raw: str) -> discord.Embed:
+def _parse_sources(raw: str) -> list[str]:
+    sources_text = ""
+    if raw.startswith("Sources:\n"):
+        sources_text = raw[len("Sources:\n"):]
+    elif "\n\nSources:\n" in raw:
+        _, sources_text = raw.split("\n\nSources:\n", 1)
+
+    if not sources_text:
+        return []
+    return [s.strip("- ").strip() for s in sources_text.strip().split("\n") if s.strip()]
+
+
+def _answer_to_embed(raw: str) -> tuple[discord.Embed, list[str]]:
+    sources = _parse_sources(raw)
+    has_feedback = bool(sources)
+
     if raw == "I don't have a runbook for this.":
         embed = discord.Embed(
             title="No runbook found",
             description=raw,
             color=discord.Color.orange(),
         )
-        return embed
+        return embed, []
 
     if raw.startswith("Sources:\n"):
         answer_text = "*No LLM answer generated — showing raw sources.*"
-        sources_text = raw[len("Sources:\n"):]
     elif "\n\nSources:\n" in raw:
-        answer_text, sources_text = raw.split("\n\nSources:\n", 1)
+        answer_text, _ = raw.split("\n\nSources:\n", 1)
     else:
         embed = discord.Embed(
             title="Answer",
             description=raw[:4096],
             color=discord.Color.blue(),
         )
-        embed.set_footer(text="Thumbs up/down to rate this answer")
-        return embed
+        if has_feedback:
+            embed.set_footer(text="Thumbs up/down to rate this answer")
+        return embed, []
 
     embed = discord.Embed(
         title="Answer",
@@ -85,11 +107,66 @@ def _answer_to_embed(raw: str) -> discord.Embed:
         color=discord.Color.blue(),
     )
 
-    sources_lines = [s.strip("- ").strip() for s in sources_text.strip().split("\n") if s.strip()]
-    for i, src in enumerate(sources_lines, 1):
+    for i, src in enumerate(sources, 1):
         name = f"Source {i}"
         value = f"`{src}`"[:1024]
         embed.add_field(name=name, value=value, inline=True)
 
-    embed.set_footer(text="Thumbs up/down to rate this answer")
-    return embed
+    if has_feedback:
+        embed.set_footer(text="Thumbs up/down to rate this answer")
+    return embed, sources
+
+
+def _log_feedback(
+    question: str,
+    answer: str,
+    sources: list[str],
+    rating: str,
+    user_id: int,
+) -> None:
+    entry = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "question": question,
+        "answer": answer,
+        "sources": sources,
+        "rating": rating,
+        "user_id": user_id,
+    }
+    FEEDBACK_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(FEEDBACK_PATH, "a") as f:
+        f.write(json.dumps(entry) + "\n")
+    logger.info("Feedback logged: %s for Q=%r", rating, question[:60])
+
+
+class FeedbackView(View):
+    def __init__(self, question: str, answer: str, sources: list[str]) -> None:
+        super().__init__(timeout=86400)
+        self._question = question
+        self._answer = answer
+        self._sources = sources
+
+    async def _rate(self, interaction: discord.Interaction, rating: str) -> None:
+        assert interaction.user is not None
+        _log_feedback(
+            question=self._question,
+            answer=self._answer,
+            sources=self._sources,
+            rating=rating,
+            user_id=interaction.user.id,
+        )
+        for child in self.children:
+            child.disabled = True  # type: ignore[union-attr]
+        if interaction.message and interaction.message.embeds:
+            embed = interaction.message.embeds[0]
+            embed.set_footer(text=f"Rated: {rating}")
+            await interaction.response.edit_message(embed=embed, view=self)
+        else:
+            await interaction.response.edit_message(view=self)
+
+    @discord.ui.button(label="👍", style=discord.ButtonStyle.success)
+    async def thumbs_up(self, interaction: discord.Interaction, _button: Button) -> None:
+        await self._rate(interaction, "up")
+
+    @discord.ui.button(label="👎", style=discord.ButtonStyle.danger)
+    async def thumbs_down(self, interaction: discord.Interaction, _button: Button) -> None:
+        await self._rate(interaction, "down")

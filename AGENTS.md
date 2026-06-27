@@ -1,5 +1,7 @@
 # AGENTS.md — Persistent context for opencode
 
+> Full project closeout: [docs/CLOSEOUT.md](docs/CLOSEOUT.md)
+
 ## 🎯 Milestone: Full Pipeline Verified Live (2026-06-27)
 
 ## What We Built

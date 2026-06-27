@@ -1,7 +1,7 @@
 __pycache__/
 *.pyc
 .env
-data/chroma_db/
+data/chroma_db*
 
 .DS_Store
 *.egg-info/

@@ -19,6 +19,14 @@ class Config(BaseModel):
     chunk_overlap: int = Field(default=50)
     top_k: int = Field(default=5)
     embedding_model: str = Field(default="all-MiniLM-L6-v2")
+    chunking_strategy: str = Field(default="recursive")
+
+    @field_validator("chunking_strategy")
+    @classmethod
+    def validate_chunking(cls, v: str) -> str:
+        if v not in ("recursive", "header-split", "fixed-size"):
+            raise ValueError(f"Invalid chunking strategy: {v}")
+        return v
 
     @field_validator("llm_provider")
     @classmethod
@@ -41,6 +49,7 @@ _ENV_MAP = {
     "CHUNK_OVERLAP": "chunk_overlap",
     "TOP_K": "top_k",
     "EMBEDDING_MODEL": "embedding_model",
+    "CHUNKING_STRATEGY": "chunking_strategy",
 }
 
 

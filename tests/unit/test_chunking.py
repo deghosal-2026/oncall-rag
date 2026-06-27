@@ -40,21 +40,21 @@ class TestSplitFile:
     def test_splits_into_chunks(self, tmp_path):
         fp = tmp_path / "doc.md"
         fp.write_text("# Title\n\nParagraph one.\n\nParagraph two.\n\nParagraph three.\n")
-        chunks = _split_file(fp, chunk_size=50, chunk_overlap=10)
+        chunks = _split_file(fp, chunk_size=50, chunk_overlap=10, strategy="recursive")
         assert len(chunks) > 1
         assert all(c.text.strip() for c in chunks)
 
     def test_single_chunk_for_small_file(self, tmp_path):
         fp = tmp_path / "small.md"
         fp.write_text("# Just one header\n")
-        chunks = _split_file(fp, chunk_size=500, chunk_overlap=50)
+        chunks = _split_file(fp, chunk_size=500, chunk_overlap=50, strategy="recursive")
         assert len(chunks) == 1
         assert chunks[0].text.strip() == "# Just one header"
 
     def test_tracks_line_numbers(self, tmp_path):
         fp = tmp_path / "lines.md"
         fp.write_text("line1\nline2\nline3\nline4\nline5\n")
-        chunks = _split_file(fp, chunk_size=10, chunk_overlap=2)
+        chunks = _split_file(fp, chunk_size=10, chunk_overlap=2, strategy="recursive")
         for c in chunks:
             assert c.start_line >= 1
             assert c.end_line >= c.start_line
@@ -63,5 +63,5 @@ class TestSplitFile:
     def test_skips_empty_chunks(self, tmp_path):
         fp = tmp_path / "empty.md"
         fp.write_text("valid\n\n\n\n\nmore\n")
-        chunks = _split_file(fp, chunk_size=10, chunk_overlap=2)
+        chunks = _split_file(fp, chunk_size=10, chunk_overlap=2, strategy="recursive")
         assert all(c.text.strip() for c in chunks)

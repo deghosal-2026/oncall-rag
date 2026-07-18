@@ -6,6 +6,13 @@ from pydantic import Field, field_validator
 from pydantic import BaseModel
 
 
+OMLX_AVAILABLE_MODELS = [
+    "Llama-3.2-3B-Instruct-4bit",
+    "DeepSeek-R1-Distill-Qwen-14B-4bit",
+    "Qwen3.5-9B-MLX-4bit",
+]
+
+
 class Config(BaseModel):
     llm_provider: str = Field(default="omlx")
     omlx_endpoint: str = Field(default="http://localhost:11434")
